@@ -42,6 +42,15 @@ from mcp_server.tools.indra_cogex import (
     query_mechanistic_statements,
     run_enrichment_analysis,
 )
+from mcp_server.tools.coscientist import (
+    generate_hypothesis,
+    review_hypothesis,
+    evolve_hypothesis,
+    meta_review_analysis,
+    generate_final_report,
+    supervisor_decision,
+    get_system_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +76,15 @@ mcp.tool(query_pathways,                name="query_pathways")
 mcp.tool(query_causal_subnetwork,       name="query_causal_subnetwork")
 mcp.tool(query_mechanistic_statements,  name="query_mechanistic_statements")
 mcp.tool(run_enrichment_analysis,       name="run_enrichment_analysis")
+
+# register coscientist agent tools
+mcp.tool(generate_hypothesis,        name="generate_hypothesis")
+mcp.tool(review_hypothesis,          name="review_hypothesis")
+mcp.tool(evolve_hypothesis,          name="evolve_hypothesis")
+mcp.tool(meta_review_analysis,       name="meta_review_analysis")
+mcp.tool(generate_final_report,      name="generate_final_report")
+mcp.tool(supervisor_decision,        name="supervisor_decision")
+mcp.tool(get_system_status,          name="get_system_status")
 
 mcp_http_app = mcp.http_app()
 app = FastAPI(lifespan=mcp_http_app.lifespan)
@@ -99,8 +117,16 @@ async def root():
             "query_causal_subnetwork",
             "query_mechanistic_statements",
             "run_enrichment_analysis",
+            "generate_hypothesis",
+            "review_hypothesis",
+            "evolve_hypothesis",
+            "meta_review_analysis",
+            "generate_final_report",
+            "supervisor_decision",
+            "get_system_status",
         ],
         "api_keys_configured": {
+            "DEEPSEEK_API_KEY": bool(os.environ.get("DEEPSEEK_API_KEY")),
             "ENTREZ_EMAIL": entrez_email_present,
         },
         "integrations": {
