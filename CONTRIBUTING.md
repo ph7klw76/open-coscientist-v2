@@ -5,7 +5,7 @@ Thank you for your interest in contributing to Open Coscientist. This document p
 ## Development Setup
 
 ```bash
-git clone https://github.com/jataware/open-coscientist.git
+git clone https://github.com/ph7klw76/open-coscientist.git
 cd open-coscientist
 
 # Use your preferred virtual environment package

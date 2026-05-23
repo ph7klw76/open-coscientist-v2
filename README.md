@@ -8,7 +8,7 @@ Open Coscientist is an open **adaptation based on Google Research's [AI Co-Scien
 
 <p align="center">
   <a href="https://youtu.be/LyOvigZ59yE?si=JiIJnXajgLhTb1yj">
-    <img src="https://github.com/jataware/open-coscientist/blob/main/assets/Open_Coscientist_Demo.gif?raw=true" alt="Open Coscientist Demo">
+    <img src="https://github.com/ph7klw76/open-coscientist/blob/main/assets/Open_Coscientist_Demo.gif?raw=true" alt="Open Coscientist Demo">
   </a>
 </p>
 
@@ -23,7 +23,7 @@ Open Coscientist is an open **adaptation based on Google Research's [AI Co-Scien
 
 The engine works with any LLM and can run without external data sources.
 
-For high-quality hypothesis generation, the system provides an MCP server integration to perform literature-aware reasoning over published research. See [MCP Integration](https://github.com/jataware/open-coscientist/blob/main/docs/mcp-integration.md) for setup and configuration details, and to run the basic reference MCP server.
+For high-quality hypothesis generation, the system provides an MCP server integration to perform literature-aware reasoning over published research. See [MCP Integration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/mcp-integration.md) for setup and configuration details, and to run the basic reference MCP server.
 
 ## Quick Start
 
@@ -40,9 +40,9 @@ export GEMINI_API_KEY="your-key-here"
 # or: export OPENAI_API_KEY="your-key-here"
 ```
 
-For development, see [CONTRIBUTING.md](https://github.com/jataware/open-coscientist/blob/main/CONTRIBUTING.md).
+For development, see [CONTRIBUTING.md](https://github.com/ph7klw76/open-coscientist/blob/main/CONTRIBUTING.md).
 
-> **Note**: for the any literature review to run, you must provide an MCP server with literature review tools/capabilities. You can use the provided reference implementation [MCP Server](https://github.com/jataware/open-coscientist/tree/main/mcp_server). Otherwise, no published research will be used.
+> **Note**: for the any literature review to run, you must provide an MCP server with literature review tools/capabilities. You can use the provided reference implementation [MCP Server](https://github.com/ph7klw76/open-coscientist/tree/main/mcp_server). Otherwise, no published research will be used.
 
 **Model Support**: Uses [LiteLLM](https://docs.litellm.ai/docs/providers) for 100+ LLM providers (OpenAI, Anthropic, Google, Azure, AWS Bedrock, Cohere, etc.). May need to tweak some constants.py token usage and other params, such as initial hypotheses count, in order to work with less powerful models.
 
@@ -72,14 +72,14 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-See [`examples/run.py`](https://github.com/jataware/open-coscientist/blob/main/examples/run.py) for a full example cli script with a built-in Console Reporter. **Remember**, you must run the literature review MCP server for any literature review to be included in the hypothesis generation.
+See [`examples/run.py`](https://github.com/ph7klw76/open-coscientist/blob/main/examples/run.py) for a full example cli script with a built-in Console Reporter. **Remember**, you must run the literature review MCP server for any literature review to be included in the hypothesis generation.
 
 ## Features
 
 - **Multi-agent workflow**: Supervisor, Generator, Reviewer, Ranker, Tournament Judge, Meta-Reviewer, Evolution, Proximity Deduplication
 - **Rich hypothesis output**: Each hypothesis includes `text`, `explanation` (layman summary), `literature_grounding` with structured `[C*]` citations, and `experiment` (suggested validation design)
 - **Literature review integration**: Optional MCP server provides access to real published research; structured citations resolve to full source metadata
-- **Domain-agnostic customization**: YAML-based configuration to bring your own MCP servers, literature sources, and domain-specific prompt guidance — no code changes needed (see [Domain Customization](https://github.com/jataware/open-coscientist/blob/main/docs/domain-customization.md))
+- **Domain-agnostic customization**: YAML-based configuration to bring your own MCP servers, literature sources, and domain-specific prompt guidance — no code changes needed (see [Domain Customization](https://github.com/ph7klw76/open-coscientist/blob/main/docs/domain-customization.md))
 - **Real-time streaming**: Stream results as they're generated
 - **Intelligent caching**: Faster development iteration with LLM response caching
 - **Elo-based tournament**: Pairwise hypothesis comparison with Elo ratings
@@ -91,14 +91,14 @@ Functional reference MCP server included in `mcp_server/` directory.
 
 ## Documentation
 
-- **[Architecture](https://github.com/jataware/open-coscientist/blob/main/docs/architecture.md)** - Workflow diagram, node descriptions, state management
-- **[MCP Integration](https://github.com/jataware/open-coscientist/blob/main/docs/mcp-integration.md)** - Literature review setup and configuration
-- **[Generation Modes](https://github.com/jataware/open-coscientist/blob/main/docs/generation-modes.md)** - Three generate node modes explained, and parameters to enable them
-- **[Configuration](https://github.com/jataware/open-coscientist/blob/main/docs/configuration.md)** - All parameters, caching, performance tuning
-- **[Domain Customization](https://github.com/jataware/open-coscientist/blob/main/docs/domain-customization.md)** - Adapting to new domains (cybersecurity, bioinformatics, etc.) via YAML config
-- **[Literature Review Tools Configuration](https://github.com/jataware/open-coscientist/blob/main/docs/literature_review_tools_configuration.md)** - YAML schema reference for custom MCP servers and multi-source literature review
-- **[Logging](https://github.com/jataware/open-coscientist/blob/main/docs/logging.md)** - File logging, rotating logs, log levels
-- **[Development](https://github.com/jataware/open-coscientist/blob/main/docs/development.md)** - Contributing, node structure, testing
+- **[Architecture](https://github.com/ph7klw76/open-coscientist/blob/main/docs/architecture.md)** - Workflow diagram, node descriptions, state management
+- **[MCP Integration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/mcp-integration.md)** - Literature review setup and configuration
+- **[Generation Modes](https://github.com/ph7klw76/open-coscientist/blob/main/docs/generation-modes.md)** - Three generate node modes explained, and parameters to enable them
+- **[Configuration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/configuration.md)** - All parameters, caching, performance tuning
+- **[Domain Customization](https://github.com/ph7klw76/open-coscientist/blob/main/docs/domain-customization.md)** - Adapting to new domains (cybersecurity, bioinformatics, etc.) via YAML config
+- **[Literature Review Tools Configuration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/literature_review_tools_configuration.md)** - YAML schema reference for custom MCP servers and multi-source literature review
+- **[Logging](https://github.com/ph7klw76/open-coscientist/blob/main/docs/logging.md)** - File logging, rotating logs, log levels
+- **[Development](https://github.com/ph7klw76/open-coscientist/blob/main/docs/development.md)** - Contributing, node structure, testing
 
 ### Node Descriptions
 
@@ -119,7 +119,7 @@ Functional reference MCP server included in `mcp_server/` directory.
 
 The bundled MCP server provides a PubMed reference implementation. The system is domain-agnostic: a YAML configuration file controls which MCP servers, literature sources, and prompt guidance are used — no code changes needed. Example configurations are included for biomedical (INDRA + PubMed), cybersecurity (arXiv + Google Scholar + NVD), and multi-source academic research.
 
-See [MCP Integration](https://github.com/jataware/open-coscientist/blob/main/docs/mcp-integration.md) to set up literature review, and [Domain Customization](https://github.com/jataware/open-coscientist/blob/main/docs/domain-customization.md) to adapt to your research area.
+See [MCP Integration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/mcp-integration.md) to set up literature review, and [Domain Customization](https://github.com/ph7klw76/open-coscientist/blob/main/docs/domain-customization.md) to adapt to your research area.
 
 ## Attribution
 
