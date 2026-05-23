@@ -1,29 +1,32 @@
 # Open Coscientist
 
-**AI-powered research hypothesis generation using LangGraph**
-
-Open Coscientist is an open **adaptation based on Google Research's [AI Co-Scientist](https://research.google/blog/accelerating-scientific-breakthroughs-with-an-ai-co-scientist/)** research paper. This project provides an implementation that generates, reviews, ranks, and evolves research hypotheses using the multi-agent architecture described. It orchestrates 8-10 specialized AI agents through a LangGraph workflow and aims to produce novel hypotheses grounded in scientific literature.
-
-## Demo
+**AI-powered multi-agent research hypothesis generation using LangGraph + DeepSeek V4**
 
 <p align="center">
   <a href="https://youtu.be/LyOvigZ59yE?si=JiIJnXajgLhTb1yj">
-    <img src="https://github.com/ph7klw76/open-coscientist/blob/main/assets/Open_Coscientist_Demo.gif?raw=true" alt="Open Coscientist Demo">
+    <img src="https://github.com/ph7klw76/open-coscientist-v2/blob/main/assets/Open_Coscientist_Demo.gif?raw=true" alt="Open Coscientist Demo">
   </a>
 </p>
 
 <p align="center">
   <em>
-    In this demo we use Open Coscientist to generate hypotheses for novel approaches to early detection of Alzheimer's disease.
-    Click to watch the full demo on YouTube.
+    Demo: Open Coscientist generating hypotheses for early detection of Alzheimer's disease.
+    <a href="https://youtu.be/LyOvigZ59yE?si=JiIJnXajgLhTb1yj">Watch full demo on YouTube</a>
   </em>
 </p>
 
-### Standalone operation
+Open Coscientist is an open-source adaptation of **Google Research's [AI Co-Scientist](https://research.google/blog/accelerating-scientific-breakthroughs-with-an-ai-co-scientist/)**. It orchestrates **8 specialized AI agents** through a LangGraph workflow to generate, review, rank, and evolve novel scientific hypotheses — grounded in published literature via **MCP (Model Context Protocol)** and powered by **DeepSeek V4** through LiteLLM.
 
-The engine works with any LLM and can run without external data sources.
+## Why Open Coscientist?
 
-For high-quality hypothesis generation, the system provides an MCP server integration to perform literature-aware reasoning over published research. See [MCP Integration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/mcp-integration.md) for setup and configuration details, and to run the basic reference MCP server.
+- 🧬 **Scientific-grade hypotheses**: Each output includes mechanistic reasoning, falsifiable predictions, literature grounding with structured `[C*]` citations, and suggested experimental validation
+- 🤖 **8-agent LangGraph pipeline**: Supervisor → Literature Review → Generation → Reflection → Review → Tournament Ranking → Meta-Review → Evolution
+- 📚 **Literature-grounded**: MCP server with 18 tools (PubMed search + fulltext, INDRA CoGex knowledge graph, AI agent tools) connects hypotheses to real published research
+- 🔬 **DeepSeek V4 powered**: DeepSeek V4 Pro for complex reasoning (hypothesis generation, evolution, supervisor decisions) and DeepSeek V4 Flash for high-throughput tasks (review, meta-analysis)
+- 🌐 **Domain-agnostic**: YAML-based configuration adapts to any research domain — biomedical, cybersecurity, materials science — without code changes
+- ⚡ **Production ready**: Streaming, intelligent LLM caching, Elo-based tournament ranking, proximity deduplication
+
+---
 
 ## Quick Start
 
@@ -33,20 +36,19 @@ For high-quality hypothesis generation, the system provides an MCP server integr
 pip install open-coscientist
 ```
 
-Set your API key (any LiteLLM-supported provider):
+### Set your LLM API key
+
 ```bash
-export GEMINI_API_KEY="your-key-here"
-# or: export ANTHROPIC_API_KEY="your-key-here"
-# or: export OPENAI_API_KEY="your-key-here"
+# DeepSeek V4 (recommended)
+export DEEPSEEK_API_KEY="your-deepseek-key"
+
+# Or any LiteLLM-supported provider: OpenAI, Anthropic, Google, etc.
+export OPENAI_API_KEY="your-key"
+export ANTHROPIC_API_KEY="your-key"
+export GEMINI_API_KEY="your-key"
 ```
 
-For development, see [CONTRIBUTING.md](https://github.com/ph7klw76/open-coscientist/blob/main/CONTRIBUTING.md).
-
-> **Note**: for the any literature review to run, you must provide an MCP server with literature review tools/capabilities. You can use the provided reference implementation [MCP Server](https://github.com/ph7klw76/open-coscientist/tree/main/mcp_server). Otherwise, no published research will be used.
-
-**Model Support**: Uses [LiteLLM](https://docs.litellm.ai/docs/providers) for 100+ LLM providers (OpenAI, Anthropic, Google, Azure, AWS Bedrock, Cohere, etc.). May need to tweak some constants.py token usage and other params, such as initial hypotheses count, in order to work with less powerful models.
-
-### Basic Usage
+### Run hypothesis generation
 
 ```python
 import asyncio
@@ -54,86 +56,253 @@ from open_coscientist import HypothesisGenerator
 
 async def main():
     generator = HypothesisGenerator(
-        model_name="gemini/gemini-2.5-flash",  # default model if not provided
+        model_name="deepseek/deepseek-v4-pro",
+        cheap_model_name="deepseek/deepseek-v4-flash",
         max_iterations=1,
         initial_hypotheses_count=5,
-        evolution_max_count=3
     )
 
     async for node_name, state in generator.generate_hypotheses(
-        research_goal="Your research question",
-        stream=True
+        research_goal="Identify novel drug targets for type 2 diabetes",
+        stream=True,
     ):
-        print(f"Completed: {node_name}")
+        print(f"✓ {node_name}")
         if node_name == "generate":
-            print(f"Generated {len(state['hypotheses'])} hypotheses")
+            for h in state["hypotheses"]:
+                print(f"  • {h['text'][:120]}...")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
-See [`examples/run.py`](https://github.com/ph7klw76/open-coscientist/blob/main/examples/run.py) for a full example cli script with a built-in Console Reporter. **Remember**, you must run the literature review MCP server for any literature review to be included in the hypothesis generation.
+See [`examples/run.py`](https://github.com/ph7klw76/open-coscientist-v2/blob/main/examples/run.py) for a full CLI script with built-in console reporter.
+
+> **Important**: For literature-grounded hypotheses, run the MCP server first. See [MCP Integration](#mcp-server--literature-review) below.
+
+---
+
+## Architecture
+
+```
+                    ┌──────────────┐
+                    │  SUPERVISOR  │  ← Research planning & strategy
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+    ┌─────────────┐ ┌───────────┐ ┌──────────┐
+    │ LITERATURE  │ │ GENERATE  │ │ REFLECT  │
+    │   REVIEW    │ │   (×N)    │ │          │
+    └─────────────┘ └─────┬─────┘ └────┬─────┘
+                          │            │
+              ┌───────────┼────────────┘
+              ▼           ▼
+       ┌──────────┐ ┌──────────┐
+       │  REVIEW  │ │  RANK    │
+       └────┬─────┘ └────┬─────┘
+            │            │
+            ▼            ▼
+     ┌────────────┐ ┌──────────────┐
+     │ TOURNAMENT │ │ META-REVIEW  │
+     │  (Elo)     │ │              │
+     └─────┬──────┘ └──────┬───────┘
+           │               │
+           ▼               ▼
+    ┌────────────┐  ┌────────────┐
+    │  EVOLVE    │  │ PROXIMITY  │
+    │  (top-k)   │  │ (dedup)    │
+    └────────────┘  └────────────┘
+```
+
+| Node | Role | Key Operations |
+|------|------|----------------|
+| **Supervisor** | Research strategist | Analyzes goal, identifies key areas, creates workflow plan |
+| **Literature Review** | Knowledge grounding | Queries PubMed/PubMed Central via MCP; analyzes real papers |
+| **Generate** | Hypothesis creation | Creates N diverse hypotheses with mechanistic depth |
+| **Reflection** | Literature validation | Compares hypotheses against published findings; flags novelty |
+| **Review** | Critical evaluation | Scores across 6 criteria; adaptive batch or parallel strategy |
+| **Rank** | Holistic ordering | LLM-based ranking considering composite scores + reviews |
+| **Tournament** | Pairwise comparison | Elo tournament with random matchups; produces calibrated ratings |
+| **Meta-Review** | Strategic synthesis | Identifies common strengths, weaknesses, biases, and research gaps |
+| **Evolve** | Hypothesis refinement | Refines top-k hypotheses while preserving diversity |
+| **Proximity** | Deduplication | Clusters similar hypotheses; removes near-duplicates |
+
+---
+
+## MCP Server & Literature Review
+
+The bundled MCP server provides **18 tools** across three categories:
+
+### Literature Tools (PubMed)
+| Tool | Description |
+|------|-------------|
+| `check_pubmed_available` | Test PubMed connectivity |
+| `search_pubmed` | Search PubMed with metadata retrieval |
+| `pubmed_search_with_fulltext` | Search + fulltext download from PMC |
+
+### Knowledge Graph Tools (INDRA CoGex)
+| Tool | Description |
+|------|-------------|
+| `query_gene_disease_network` | Gene-disease association network |
+| `query_gene_codependents` | Co-dependent gene relationships |
+| `query_drug_info` | Drug target and mechanism data |
+| `query_clinical_trials` | Clinical trial information |
+| `query_pathways` | Biological pathway data |
+| `query_causal_subnetwork` | Causal relationship subgraphs |
+| `query_mechanistic_statements` | Molecular mechanism statements |
+| `run_enrichment_analysis` | Statistical enrichment analysis |
+
+### AI Agent Tools (Coscientist — 🆕)
+| Tool | Description | Model |
+|------|-------------|-------|
+| `generate_hypothesis` | Generate novel falsifiable hypotheses | DeepSeek V4 Pro |
+| `review_hypothesis` | Rigorous causal + assumption review | DeepSeek V4 Flash |
+| `evolve_hypothesis` | Evolve hypotheses to fix weaknesses | DeepSeek V4 Pro |
+| `meta_review_analysis` | Multi-hypothesis meta-analysis | DeepSeek V4 Flash |
+| `generate_final_report` | Comprehensive research report | DeepSeek V4 Pro |
+| `supervisor_decision` | Strategic pipeline decisions | DeepSeek V4 Pro |
+| `get_system_status` | System config & model availability | — |
+
+### Starting the MCP Server
+
+```bash
+# Docker (recommended)
+cp mcp_server/.env.example mcp_server/.env
+# Edit .env: set ENTREZ_EMAIL, DEEPSEEK_API_KEY
+docker compose up -d
+
+# Local
+cd mcp_server && pip install -e . && cd ..
+uvicorn mcp_server.server:app --host 0.0.0.0 --port 8888
+
+# Verify
+curl http://localhost:8888
+```
+
+Open Coscientist auto-detects the MCP server at `http://localhost:8888/mcp`. Without it, hypotheses rely solely on the LLM's training data — still useful, but not grounded in current literature.
+
+---
+
+## Model Configuration
+
+Open Coscientist uses [LiteLLM](https://docs.litellm.ai/docs/providers) for 100+ LLM providers. **DeepSeek V4** is the recommended and default configuration:
+
+| Role | Default Model | Use Case |
+|------|---------------|----------|
+| Smart model | `deepseek/deepseek-v4-pro` | Hypothesis generation, evolution, supervisor, final reports |
+| Cheap model | `deepseek/deepseek-v4-flash` | Review, meta-analysis, high-throughput scoring |
+
+Override via environment variables:
+
+```bash
+export COSCIENTIST_MODEL="deepseek/deepseek-v4-pro"
+export COSCIENTIST_CHEAP_MODEL="deepseek/deepseek-v4-flash"
+```
+
+Or pass directly in code:
+
+```python
+generator = HypothesisGenerator(
+    model_name="openai/gpt-4o",
+    cheap_model_name="openai/gpt-4o-mini",
+)
+```
+
+---
 
 ## Features
 
-- **Multi-agent workflow**: Supervisor, Generator, Reviewer, Ranker, Tournament Judge, Meta-Reviewer, Evolution, Proximity Deduplication
-- **Rich hypothesis output**: Each hypothesis includes `text`, `explanation` (layman summary), `literature_grounding` with structured `[C*]` citations, and `experiment` (suggested validation design)
-- **Literature review integration**: Optional MCP server provides access to real published research; structured citations resolve to full source metadata
-- **Domain-agnostic customization**: YAML-based configuration to bring your own MCP servers, literature sources, and domain-specific prompt guidance — no code changes needed (see [Domain Customization](https://github.com/ph7klw76/open-coscientist/blob/main/docs/domain-customization.md))
-- **Real-time streaming**: Stream results as they're generated
-- **Intelligent caching**: Faster development iteration with LLM response caching
-- **Elo-based tournament**: Pairwise hypothesis comparison with Elo ratings
-- **Iterative refinement**: Evolves top hypotheses while preserving diversity
-- **Post-generation enrichments**: Attach domain-specific data (e.g., related CVEs, knowledge graph statements) to each hypothesis via configurable tool calls
+- 🧠 **Multi-agent LangGraph workflow** — 8 specialized agents orchestrated with state management
+- 📖 **Literature-grounded generation** — MCP server with PubMed fulltext search + INDRA knowledge graph + AI agent tools (18 total)
+- 🔍 **Rich hypothesis output** — `text`, `explanation` (layman summary), `literature_grounding` with structured `[C*]` citations, and `experiment` (validation design)
+- 🌐 **Domain-agnostic YAML config** — Bring your own MCP servers, literature sources, and prompt guidance; no code changes (see [Domain Customization](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/domain-customization.md))
+- ⚡ **Real-time streaming** — Stream results node-by-node as they're generated
+- 💾 **Intelligent caching** — LLM response caching for faster iteration
+- 🏆 **Elo tournament ranking** — Pairwise comparison with calibrated Elo ratings
+- 🔄 **Iterative evolution** — Refines top hypotheses while preserving diversity
+- 🎯 **Proximity deduplication** — Clusters similar hypotheses; removes near-duplicates
+- 🔧 **Three generation modes** — No-literature, literature-informed, and tool-calling generation
 
-The workflow automatically detects MCP availability and adjusts accordingly.
-Functional reference MCP server included in `mcp_server/` directory.
+---
 
 ## Documentation
 
-- **[Architecture](https://github.com/ph7klw76/open-coscientist/blob/main/docs/architecture.md)** - Workflow diagram, node descriptions, state management
-- **[MCP Integration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/mcp-integration.md)** - Literature review setup and configuration
-- **[Generation Modes](https://github.com/ph7klw76/open-coscientist/blob/main/docs/generation-modes.md)** - Three generate node modes explained, and parameters to enable them
-- **[Configuration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/configuration.md)** - All parameters, caching, performance tuning
-- **[Domain Customization](https://github.com/ph7klw76/open-coscientist/blob/main/docs/domain-customization.md)** - Adapting to new domains (cybersecurity, bioinformatics, etc.) via YAML config
-- **[Literature Review Tools Configuration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/literature_review_tools_configuration.md)** - YAML schema reference for custom MCP servers and multi-source literature review
-- **[Logging](https://github.com/ph7klw76/open-coscientist/blob/main/docs/logging.md)** - File logging, rotating logs, log levels
-- **[Development](https://github.com/ph7klw76/open-coscientist/blob/main/docs/development.md)** - Contributing, node structure, testing
+| Document | Description |
+|----------|-------------|
+| [Architecture](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/architecture.md) | Workflow diagrams, node internals, state management |
+| [MCP Integration](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/mcp-integration.md) | Literature review setup, Docker, configuration |
+| [Generation Modes](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/generation-modes.md) | Three modes with parameters and trade-offs |
+| [Configuration](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/configuration.md) | All parameters, caching, performance tuning |
+| [Domain Customization](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/domain-customization.md) | Adapting to new domains via YAML config |
+| [Literature Tools Config](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/literature_review_tools_configuration.md) | YAML schema for custom MCP servers + multi-source literature |
+| [Logging](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/logging.md) | File logging, rotating logs, log levels |
+| [Development](https://github.com/ph7klw76/open-coscientist-v2/blob/main/docs/development.md) | Contributing guide, node structure, testing |
 
-### Node Descriptions
+---
 
-| Node | Purpose | Key Operations |
-|------|---------|----------------|
-| **Supervisor** | Research planning | Analyzes research goal, identifies key areas, creates workflow strategy |
-| **Literature Review** *(Recommended)* | Academic literature search | Queries databases (PubMed, Google Scholar), retrieves and analyzes real published papers (requires MCP server; without it, uses only LLM's latent knowledge) |
-| **Generate** | Hypothesis creation | Generates N initial hypotheses using LLM with high temperature for diversity |
-| **Reflection** *(Recommended)* | Literature comparison | Analyzes hypotheses against literature review findings, identifies novel contributions and validates against real research (requires literature review) |
-| **Review** | Adaptive evaluation | Reviews hypotheses across 6 criteria using adaptive strategy (comparative batch for ≤5, parallel for >5) |
-| **Rank** | Holistic ranking | LLM ranks all hypotheses considering composite scores and review feedback |
-| **Tournament** | Pairwise comparison | Runs Elo tournament with random pairwise matchups, updates ratings |
-| **Meta-Review** | Insight synthesis | Analyzes all reviews to identify common strengths, weaknesses, and strategic directions |
-| **Evolve** | Hypothesis refinement | Refines top-k hypotheses with context awareness to preserve diversity |
-| **Proximity** | Deduplication | Clusters similar hypotheses and removes high-similarity duplicates |
+## Advanced Usage
 
-## Literature Review and Domain Customization
+### CLI with streaming
 
-The bundled MCP server provides a PubMed reference implementation. The system is domain-agnostic: a YAML configuration file controls which MCP servers, literature sources, and prompt guidance are used — no code changes needed. Example configurations are included for biomedical (INDRA + PubMed), cybersecurity (arXiv + Google Scholar + NVD), and multi-source academic research.
+```bash
+python examples/run.py \
+  --goal "Identify novel drug targets for type 2 diabetes" \
+  --model deepseek/deepseek-v4-pro \
+  --cheap-model deepseek/deepseek-v4-flash \
+  --iterations 2 \
+  --hypotheses 8 \
+  --stream
+```
 
-See [MCP Integration](https://github.com/ph7klw76/open-coscientist/blob/main/docs/mcp-integration.md) to set up literature review, and [Domain Customization](https://github.com/ph7klw76/open-coscientist/blob/main/docs/domain-customization.md) to adapt to your research area.
+### Custom domain via YAML
+
+```yaml
+# my_domain.yaml
+literature_sources:
+  - name: pubmed_biomedical
+    type: pubmed
+    mcp_server_url: "http://localhost:8888/mcp"
+    tools: [search_pubmed, pubmed_search_with_fulltext]
+
+domain_guidance: |
+  Focus on molecular mechanisms and drug-target interactions.
+  Prioritize hypotheses with clear translational potential.
+```
+
+```python
+generator = HypothesisGenerator(
+    model_name="deepseek/deepseek-v4-pro",
+    config_path="my_domain.yaml",
+)
+```
+
+### Using MCP AI Agent tools directly
+
+```python
+from mcp_server.tools.coscientist import (
+    generate_hypothesis, review_hypothesis, evolve_hypothesis,
+    meta_review_analysis, generate_final_report,
+    supervisor_decision, get_system_status,
+)
+
+# Generate a hypothesis
+result = generate_hypothesis(
+    goal="Find alternative molecular designs to overcome the energy gap law for IR MR-TADF emitters",
+    literature_review="... background summary ...",
+    field="photophysics and molecular design",
+)
+```
+
+---
 
 ## Attribution
 
-Open Coscientist is a source-available implementation inspired by Google Research's AI Co-Scientist. While Google's original system is closed-source, this project adapts their multi-agent hypothesis generation architecture from their published research paper.
+Open Coscientist is an open-source implementation inspired by Google Research's AI Co-Scientist.
 
-**Reference:**
-- **Blog**: [Accelerating scientific breakthroughs with an AI Co-Scientist](https://research.google/blog/accelerating-scientific-breakthroughs-with-an-ai-co-scientist/)
-- **Paper**: [Towards an AI co-scientist](https://arxiv.org/abs/2502.18864)
-
-This version provides a LangGraph-based implementation. It includes some optimizations for parallel execution, streaming support, and caching.
+**References:**
+- 📄 [Towards an AI co-scientist](https://arxiv.org/abs/2502.18864) — Google Research, 2025
+- 📝 [Accelerating scientific breakthroughs with an AI Co-Scientist](https://research.google/blog/accelerating-scientific-breakthroughs-with-an-ai-co-scientist/) — Google Research Blog
 
 ## Citation
-
-If you use this work, please cite both this implementation and the original Google Research paper:
 
 ```bibtex
 @article{coscientist2025,
@@ -143,4 +312,16 @@ If you use this work, please cite both this implementation and the original Goog
   year={2025},
   url={https://arxiv.org/abs/2502.18864}
 }
+
+@software{open_coscientist,
+  title={Open Coscientist: Multi-Agent Research Hypothesis Generation},
+  url={https://github.com/ph7klw76/open-coscientist-v2},
+  year={2025},
+}
 ```
+
+---
+
+<p align="center">
+  <sub>Built with LangGraph · LiteLLM · FastMCP · DeepSeek V4</sub>
+</p>

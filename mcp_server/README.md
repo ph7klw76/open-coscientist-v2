@@ -1,13 +1,32 @@
 # Open Coscientist MCP Server
 
-MCP (Model Context Protocol) server providing PubMed literature search tools for Open Coscientist hypothesis generation.
+MCP (Model Context Protocol) server providing **18 tools** for Open Coscientist hypothesis generation: PubMed literature search, INDRA CoGex biomedical knowledge graph, and coscientist AI agent tools powered by DeepSeek V4.
 
 ## Features
 
-Provides 2 core tools for biomedical literature search:
+### Literature Tools (PubMed)
+- **check_pubmed_available**: Test PubMed service accessibility
+- **search_pubmed**: Search PubMed and retrieve article metadata
+- **pubmed_search_with_fulltext**: Search PubMed, download fulltext from PMC, extract clean text
 
-- **check_pubmed_available**: Test if PubMed service is accessible
-- **pubmed_search_with_fulltext**: Search PubMed, download fulltext from PMC, and extract clean text for LLM analysis
+### Knowledge Graph Tools (INDRA CoGex)
+- **query_gene_disease_network**: Gene-disease association network queries
+- **query_gene_codependents**: Co-dependent gene relationship analysis
+- **query_drug_info**: Drug target and mechanism data
+- **query_clinical_trials**: Clinical trial information retrieval
+- **query_pathways**: Biological pathway data queries
+- **query_causal_subnetwork**: Causal relationship subgraph extraction
+- **query_mechanistic_statements**: Molecular mechanism statement queries
+- **run_enrichment_analysis**: Statistical enrichment analysis
+
+### AI Agent Tools (Coscientist — 🆕)
+- **generate_hypothesis**: Generate novel falsifiable scientific hypotheses (DeepSeek V4 Pro)
+- **review_hypothesis**: Rigorous scientific review with causal reasoning analysis (DeepSeek V4 Flash)
+- **evolve_hypothesis**: Evolve hypotheses to address identified weaknesses (DeepSeek V4 Pro)
+- **meta_review_analysis**: Multi-hypothesis meta-analysis across strengths/weaknesses/biases (DeepSeek V4 Flash)
+- **generate_final_report**: Comprehensive final research report generation (DeepSeek V4 Pro)
+- **supervisor_decision**: Strategic decision-making for research pipeline (DeepSeek V4 Pro)
+- **get_system_status**: System configuration, available models, and API key status
 
 ## Quick Start (Docker)
 
@@ -104,13 +123,24 @@ The library will:
 
 ```
 mcp_server/
-├── server.py                    # FastMCP server
+├── server.py                    # FastMCP server (18 tools)
 ├── config.py                    # Configuration
 ├── text_extraction.py           # PMC HTML to markdown
 └── tools/
-    └── lit_review/
-        ├── search_pubmed.py              # check availability
-        └── pubmed_search_with_fulltext.py  # search + fulltext
+    ├── lit_review/
+    │   ├── search_pubmed.py              # check availability
+    │   └── pubmed_search_with_fulltext.py  # search + fulltext
+    ├── indra_cogex/                      # INDRA knowledge graph
+    │   ├── associations.py
+    │   ├── client.py
+    │   ├── drug_clinical.py
+    │   ├── enrichment.py
+    │   ├── pathways.py
+    │   └── statements.py
+    └── coscientist/                      # AI agent tools (🆕)
+        ├── hypothesis.py                 # generate, review, evolve
+        ├── analysis.py                   # meta-review, final report
+        └── supervisor.py                 # decision, system status
 ```
 
 ## Docker Details
