@@ -9,7 +9,7 @@ description = "MCP server for Open Coscientist literature review"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
-    {name = "Jataware Corp", email = "info@jataware.com"}
+    {name = "ph7klw76"}
 ]
 license = {text = "Proprietary"}
 keywords = ["mcp", "pubmed", "literature-review"]
@@ -39,7 +39,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/jataware/open-coscientist"
+Repository = "https://github.com/ph7klw76/open-coscientist"
 
 [tool.setuptools.packages.find]
 where = ["."]

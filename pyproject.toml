@@ -9,7 +9,7 @@ description = "Open LangGraph-based framework for multi-agent research hypothesi
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    {name = "Brandon Rose", email = "brandon@jataware.com"}
+    {name = "ph7klw76"}
 ]
 license = {file = "LICENSE"}
 keywords = ["ai", "research", "hypothesis", "langgraph", "llm"]
@@ -44,9 +44,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jataware/open-coscientist"
-Documentation = "https://github.com/jataware/open-coscientist#readme"
-Repository = "https://github.com/jataware/open-coscientist"
+Homepage = "https://github.com/ph7klw76/open-coscientist"
+Documentation = "https://github.com/ph7klw76/open-coscientist#readme"
+Repository = "https://github.com/ph7klw76/open-coscientist"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
