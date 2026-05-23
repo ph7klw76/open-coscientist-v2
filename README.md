@@ -38,15 +38,44 @@ pip install open-coscientist
 
 ### Set your LLM API key
 
-```bash
-# DeepSeek V4 (recommended)
-export DEEPSEEK_API_KEY="your-deepseek-key"
+**Option 1: Environment variable (recommended)**
 
-# Or any LiteLLM-supported provider: OpenAI, Anthropic, Google, etc.
-export OPENAI_API_KEY="your-key"
-export ANTHROPIC_API_KEY="your-key"
-export GEMINI_API_KEY="your-key"
+Add to `~/.bashrc`, `~/.zshrc`, or run before starting:
+
+```bash
+# DeepSeek V4 (recommended) — get your key at https://platform.deepseek.com/api_keys
+export DEEPSEEK_API_KEY="sk-your-deepseek-key"
+
+# Or any LiteLLM-supported provider
+export OPENAI_API_KEY="sk-your-openai-key"
+export ANTHROPIC_API_KEY="sk-ant-your-anthropic-key"
+export GEMINI_API_KEY="your-gemini-key"
 ```
+
+**Option 2: `.env` file in your project root**
+
+```bash
+# Create .env in your project directory
+cat > .env << 'EOF'
+DEEPSEEK_API_KEY=sk-your-deepseek-key
+# COSCIENTIST_MODEL=deepseek/deepseek-v4-pro      # optional override
+# COSCIENTIST_CHEAP_MODEL=deepseek/deepseek-v4-flash
+EOF
+
+# Then load it before running
+source .env  # or use: set -a; source .env; set +a
+```
+
+**Option 3: For the MCP server**
+
+```bash
+cp mcp_server/.env.example mcp_server/.env
+# Edit mcp_server/.env and add:
+#   DEEPSEEK_API_KEY=sk-your-deepseek-key
+#   ENTREZ_EMAIL=your_email@example.com
+```
+
+> 🔑 **DeepSeek API keys**: Register at [platform.deepseek.com](https://platform.deepseek.com/api_keys). The `DEEPSEEK_API_KEY` environment variable is auto-detected by LiteLLM for all `deepseek/*` models.
 
 ### Run hypothesis generation
 
